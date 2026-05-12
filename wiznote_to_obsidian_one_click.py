@@ -721,6 +721,14 @@ def validate_images(vault: Path) -> int:
     return missing
 
 
+def remove_stale_download_report(vault: Path) -> bool:
+    report = vault / "download_report.md"
+    if not report.exists():
+        return False
+    report.unlink()
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="One-click WizNote to Obsidian migration and incremental sync.")
     parser.add_argument("--user", default=os.environ.get("WIZNOTE_USER"), help="WizNote account; can also use WIZNOTE_USER")
@@ -791,6 +799,9 @@ def main() -> int:
         else:
             save_incremental_state(vault, cloud_notes, previous_state or {"notes": {}}, to_sync_guids or set(), succeeded_guids or set())
         print(f"sync state: {vault / STATE_FILE}")
+
+    if remove_stale_download_report(vault):
+        print("removed stale download_report.md")
 
     print("\n== Validation ==")
     missing = validate_images(vault)
