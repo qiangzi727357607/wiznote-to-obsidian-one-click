@@ -42,7 +42,7 @@ python3 wiznote_to_obsidian_one_click.py \
 输出目录会是：
 
 ```text
-/path/to/obsidian-parent/wiznote_download
+/path/to/obsidian-parent/WizNotes
 ```
 
 之后增量同步：
@@ -64,7 +64,7 @@ python3 wiznote_to_obsidian_one_click.py --output-base /path/to/obsidian-parent
 
 ## 常用参数
 
-- `--clean`：删除已有 `wiznote_download` 后全量重建
+- `--clean`：删除已有 `WizNotes` 后全量重建
 - `--full`：全量跑一遍，但不先删除目录
 - `--force-title TEXT`：强制同步标题包含 `TEXT` 的笔记
 - `--force-guid GUID`：强制同步指定 docGuid
@@ -101,7 +101,7 @@ Obsidian 原生 Markdown 表格不支持合并单元格。为知笔记里的 `ro
 所有能从云端拿到的图片会集中到：
 
 ```text
-wiznote_download/attachments
+WizNotes/attachments
 ```
 
 如果原笔记里引用的是旧本机 `file://` 路径，而云端没有这个资源，脚本无法凭空恢复图片，会在最终校验中显示为 missing image links。
@@ -110,4 +110,4 @@ wiznote_download/attachments
 
 - 不要把 `.wiznote_sync_state.json` 删掉，否则下次会失去增量判断依据。
 - 不要把密码写进 README、提交记录或 issue。
-- 建议先在一个临时目录跑通，再把 `wiznote_download` 作为 Obsidian vault 打开。
+- 建议先在一个临时目录跑通，再把 `WizNotes` 作为 Obsidian vault 打开。

@@ -905,7 +905,7 @@ class WizMigrator:
         print("🔍 开始扫描笔记...")
         print("="*70)
 
-        output_base = "wiznote_download"
+        output_base = getattr(self, "output_base", "wiznote_download")
         output_path = os.path.abspath(output_base)
         print(f"📁 下载目录: {output_path}\n")
 

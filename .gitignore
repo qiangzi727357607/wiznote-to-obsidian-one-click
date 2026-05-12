@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 .DS_Store
 .env
+WizNotes/
 wiznote_download/
 download_report.md
 .wiznote_sync_state.json

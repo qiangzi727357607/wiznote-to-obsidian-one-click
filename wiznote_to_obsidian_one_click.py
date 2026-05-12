@@ -37,6 +37,7 @@ from markdownify import markdownify as markdownify_html
 
 
 DEFAULT_OUTPUT_BASE = Path.cwd()
+DEFAULT_VAULT_NAME = "WizNotes"
 DEFAULT_WIZ_TOOL_DIR = Path(__file__).resolve().parent / "vendor" / "wiznote_downloader"
 IMAGE_LINK_RE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 FRONTMATTER_RE = re.compile(r"\A---\n.*?\n---\n+", re.DOTALL)
@@ -751,8 +752,9 @@ def main() -> int:
         default=Path(os.environ.get("WIZNOTE_TOOL_DIR")) if os.environ.get("WIZNOTE_TOOL_DIR") else DEFAULT_WIZ_TOOL_DIR,
         help="Directory containing wiznote_downloader.py; defaults to the vendored downloader; can also use WIZNOTE_TOOL_DIR",
     )
-    parser.add_argument("--output-base", type=Path, default=DEFAULT_OUTPUT_BASE, help="Directory that will contain wiznote_download")
-    parser.add_argument("--clean", action="store_true", help="Delete existing wiznote_download before running a full rebuild")
+    parser.add_argument("--output-base", type=Path, default=DEFAULT_OUTPUT_BASE, help=f"Directory that will contain {DEFAULT_VAULT_NAME}")
+    parser.add_argument("--vault-name", default=DEFAULT_VAULT_NAME, help=f"Output vault directory name, default: {DEFAULT_VAULT_NAME}")
+    parser.add_argument("--clean", action="store_true", help=f"Delete existing {DEFAULT_VAULT_NAME} before running a full rebuild")
     parser.add_argument("--full", action="store_true", help="Full rebuild without deleting output first; use --clean for a clean full rebuild")
     parser.add_argument("--force-guid", action="append", default=[], help="Force sync a specific WizNote docGuid; can be repeated")
     parser.add_argument("--force-title", help="Force sync notes whose title contains this text")
@@ -763,7 +765,7 @@ def main() -> int:
         parser.error("--user is required unless WIZNOTE_USER is set")
     WizMigrator = require_wiz_tool(args.wiz_tool_dir.resolve())
     output_base = args.output_base.resolve()
-    vault = output_base / "wiznote_download"
+    vault = output_base / safe_name(args.vault_name)
 
     full_rebuild = args.clean or args.full
     if args.clean and vault.exists():
@@ -786,6 +788,7 @@ def main() -> int:
         try:
             os.chdir(output_base)
             # The bundled full migrator performs its own login and progress output.
+            migrator.output_base = vault.name
             migrator.run()
         finally:
             os.chdir(old_cwd)
