@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+wiznote_download/
+download_report.md
+.wiznote_sync_state.json
+.sync_backups/
