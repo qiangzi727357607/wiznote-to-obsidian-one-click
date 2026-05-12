@@ -596,9 +596,9 @@ def download_collab_asset(migrator, doc_guid: str, filename: str, target: Path) 
     ws_domain = urlparse(migrator.kapi_url).netloc
     url = f"https://{ws_domain}/editor/{migrator.kb_guid}/{doc_guid}/resources/{filename}"
     headers = {"Cookie": f"x-live-editor-token={token}"}
-    for _ in range(2):
+    for _ in range(1):
         try:
-            response = migrator.session.get(url, headers=headers, timeout=(8, 20), stream=True)
+            response = migrator.session.get(url, headers=headers, timeout=(5, 10), stream=True)
             if response.status_code != 200:
                 continue
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -612,16 +612,28 @@ def download_collab_asset(migrator, doc_guid: str, filename: str, target: Path) 
     return False
 
 
+def is_probably_cloud_resource(ref: str) -> bool:
+    clean_ref = ref.split("#", 1)[0].split("?", 1)[0]
+    if clean_ref.startswith("/") or clean_ref.startswith("~"):
+        return False
+    if "://" in clean_ref:
+        return False
+    parts = Path(clean_ref).parts
+    return not any(part in {"..", "."} for part in parts)
+
+
 def centralize_images(vault: Path, migrator, note_index: dict[Path, str] | None = None) -> dict[str, int]:
     attachments = vault / "attachments"
     attachments.mkdir(parents=True, exist_ok=True)
     if note_index is None:
         note_index = build_note_index(migrator, vault)
     stats = {"notes": 0, "links": 0, "moved": 0, "downloaded": 0, "missing": 0, "rewritten": 0}
+    md_files = sorted(md for md in vault.rglob("*.md") if attachments not in md.parents)
+    total = len(md_files)
 
-    for md in sorted(vault.rglob("*.md")):
-        if attachments in md.parents:
-            continue
+    for note_number, md in enumerate(md_files, 1):
+        if note_number == 1 or note_number % 25 == 0 or note_number == total:
+            print(f"  [{note_number}/{total}] {md.relative_to(vault)}", flush=True)
         text = md.read_text(encoding="utf-8", errors="replace")
         matches = list(IMAGE_LINK_RE.finditer(text))
         if not matches:
@@ -650,7 +662,7 @@ def centralize_images(vault: Path, migrator, note_index: dict[Path, str] | None 
             if source.exists():
                 shutil.move(str(source), str(target))
                 stats["moved"] += 1
-            elif doc_guid and download_collab_asset(migrator, doc_guid, Path(clean_ref).name, target):
+            elif doc_guid and is_probably_cloud_resource(ref) and download_collab_asset(migrator, doc_guid, Path(clean_ref).name, target):
                 stats["downloaded"] += 1
             else:
                 stats["missing"] += 1
