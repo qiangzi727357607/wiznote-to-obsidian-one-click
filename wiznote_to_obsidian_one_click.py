@@ -10,11 +10,10 @@ What it does:
 5. Tracks state for later incremental sync.
 
 Requirements:
-  This script wraps the websocket-capable wiznote_downloader.py from:
-  https://github.com/altairwei/WizNote-to-Obsidian
+  The required WizNote downloader is vendored in vendor/wiznote_downloader.
 
 Run:
-  python3 wiznote_to_obsidian_one_click.py --user your@email.com --wiz-tool-dir /path/to/wiznote-to-obsidian/tools
+  python3 wiznote_to_obsidian_one_click.py --user your@email.com
 
 Optional:
   python3 wiznote_to_obsidian_one_click.py --output-base /path/to/output-base --clean
@@ -38,7 +37,7 @@ from markdownify import markdownify as markdownify_html
 
 
 DEFAULT_OUTPUT_BASE = Path.cwd()
-DEFAULT_WIZ_TOOL_DIR = os.environ.get("WIZNOTE_TOOL_DIR")
+DEFAULT_WIZ_TOOL_DIR = Path(__file__).resolve().parent / "vendor" / "wiznote_downloader"
 IMAGE_LINK_RE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 FRONTMATTER_RE = re.compile(r"\A---\n.*?\n---\n+", re.DOTALL)
 WIZ_GUID_RE = re.compile(
@@ -53,7 +52,7 @@ def require_wiz_tool(wiz_tool_dir: Path):
     if not downloader.exists():
         raise RuntimeError(
             f"Missing required WizNote migrator: {downloader}\n"
-            "Install or clone a websocket-capable WizNote-to-Obsidian tool, then pass --wiz-tool-dir."
+            "The vendored downloader is missing. Reinstall this project or pass --wiz-tool-dir."
         )
     sys.path.insert(0, str(wiz_tool_dir))
     import wiznote_downloader
@@ -729,8 +728,8 @@ def main() -> int:
     parser.add_argument(
         "--wiz-tool-dir",
         type=Path,
-        default=Path(DEFAULT_WIZ_TOOL_DIR) if DEFAULT_WIZ_TOOL_DIR else None,
-        help="Directory containing wiznote_downloader.py; can also use WIZNOTE_TOOL_DIR",
+        default=Path(os.environ.get("WIZNOTE_TOOL_DIR")) if os.environ.get("WIZNOTE_TOOL_DIR") else DEFAULT_WIZ_TOOL_DIR,
+        help="Directory containing wiznote_downloader.py; defaults to the vendored downloader; can also use WIZNOTE_TOOL_DIR",
     )
     parser.add_argument("--output-base", type=Path, default=DEFAULT_OUTPUT_BASE, help="Directory that will contain wiznote_download")
     parser.add_argument("--clean", action="store_true", help="Delete existing wiznote_download before running a full rebuild")
@@ -742,9 +741,6 @@ def main() -> int:
 
     if not args.user:
         parser.error("--user is required unless WIZNOTE_USER is set")
-    if not args.wiz_tool_dir:
-        parser.error("--wiz-tool-dir is required unless WIZNOTE_TOOL_DIR is set")
-
     WizMigrator = require_wiz_tool(args.wiz_tool_dir.resolve())
     output_base = args.output_base.resolve()
     vault = output_base / "wiznote_download"

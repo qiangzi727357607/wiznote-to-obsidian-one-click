@@ -14,15 +14,13 @@
 
 ## 依赖
 
-本脚本复用了一个已有的为知笔记下载器：
+仓库已经内置为知笔记下载器源码，位于：
 
-<https://github.com/altairwei/WizNote-to-Obsidian>
-
-先 clone 它，并记住其中 `tools/` 目录路径：
-
-```bash
-git clone https://github.com/altairwei/WizNote-to-Obsidian.git
+```text
+vendor/wiznote_downloader
 ```
+
+不需要额外 clone 其它仓库。
 
 安装 Python 依赖：
 
@@ -37,7 +35,6 @@ pip3 install -r requirements.txt
 ```bash
 python3 wiznote_to_obsidian_one_click.py \
   --user your@email.com \
-  --wiz-tool-dir /path/to/WizNote-to-Obsidian/tools \
   --output-base /path/to/obsidian-parent \
   --clean
 ```
@@ -53,7 +50,6 @@ python3 wiznote_to_obsidian_one_click.py \
 ```bash
 python3 wiznote_to_obsidian_one_click.py \
   --user your@email.com \
-  --wiz-tool-dir /path/to/WizNote-to-Obsidian/tools \
   --output-base /path/to/obsidian-parent
 ```
 
@@ -62,7 +58,6 @@ python3 wiznote_to_obsidian_one_click.py \
 ```bash
 export WIZNOTE_USER="your@email.com"
 export WIZNOTE_PASSWORD="your-password"
-export WIZNOTE_TOOL_DIR="/path/to/WizNote-to-Obsidian/tools"
 
 python3 wiznote_to_obsidian_one_click.py --output-base /path/to/obsidian-parent
 ```
@@ -74,6 +69,7 @@ python3 wiznote_to_obsidian_one_click.py --output-base /path/to/obsidian-parent
 - `--force-title TEXT`：强制同步标题包含 `TEXT` 的笔记
 - `--force-guid GUID`：强制同步指定 docGuid
 - `--workers N`：下载线程数，默认 `3`
+- `--wiz-tool-dir PATH`：使用其它 `wiznote_downloader.py`，一般不需要
 
 ## 增量同步原理
 
